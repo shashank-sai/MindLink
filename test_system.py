@@ -14,7 +14,7 @@ def test_imports():
     print("Testing imports...")
     
     try:
-        from core.orchestrator import DualModelOrchestrator
+        from core.orchestrator import TriModelOrchestrator
         print("✓ Orchestrator imported successfully")
     except Exception as e:
         print(f"✗ Failed to import orchestrator: {e}")
@@ -62,10 +62,10 @@ def test_basic_functionality():
     print("\nTesting basic functionality...")
     
     try:
-        from core.orchestrator import DualModelOrchestrator
+        from core.orchestrator import TriModelOrchestrator
         
         # Create orchestrator instance
-        orchestrator = DualModelOrchestrator()
+        orchestrator = TriModelOrchestrator()
         print("✓ Orchestrator instantiated successfully")
         
         # Test processing a simple input
@@ -77,7 +77,7 @@ def test_basic_functionality():
         print(f"  Medical analysis: {medical_analysis}")
         
         # Test response synthesis
-        final_response = orchestrator.synthesize_response(therapeutic_response, medical_analysis)
+        final_response = orchestrator.synthesize_response(therapeutic_response, medical_analysis, test_input)
         print(f"✓ Response synthesized: {final_response[:50]}...")
         
         return True

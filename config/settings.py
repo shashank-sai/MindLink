@@ -6,6 +6,7 @@ Configuration settings for the MindLink dual-model therapy system.
 # Model configurations
 THERAPIST_MODEL = "phi3:3.8b"  # Therapeutic Specialist (SLM)
 SENTINEL_MODEL = "mistral:7b"   # Medical Context Sentinel (GLM)
+SYNTHESIS_MODEL = "phi3.5:3.8b"   # Response Synthesis and Follow-up Generator (larger model)
 
 # Ollama configuration
 OLLAMA_HOST = "http://localhost:11434"

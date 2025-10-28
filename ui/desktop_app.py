@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Desktop application interface for the MindLink dual-model therapy system.
+Desktop application interface for the MindLink tri-model therapy system.
 """
 
 import tkinter as tk
@@ -9,7 +9,7 @@ import threading
 import logging
 from datetime import datetime
 
-from core.orchestrator import DualModelOrchestrator
+from core.orchestrator import TriModelOrchestrator
 from utils.logger import SessionLogger
 from utils.safety import get_global_safety_manager
 from core.context_engine import ContextEngine
@@ -20,13 +20,13 @@ class TherapyApp:
     def __init__(self, root):
         """Initialize the therapy application."""
         self.root = root
-        self.root.title("MindLink - Dual-Model Therapy Assistant")
+        self.root.title("MindLink - Tri-Model Therapy Assistant")
         self.root.geometry("900x700")
         self.root.minsize(700, 500)
         self.root.configure(bg="#f0f0f0")
         
         # Initialize components
-        self.orchestrator = DualModelOrchestrator()
+        self.orchestrator = TriModelOrchestrator()
         self.session_logger = SessionLogger()
         self.safety_manager = get_global_safety_manager()
         self.context_engine = ContextEngine()
@@ -337,7 +337,7 @@ class TherapyApp:
     
     def process_user_message(self, user_message: str):
         """
-        Process user message through the dual-model system.
+        Process user message through the tri-model system.
         
         Args:
             user_message: User's input message
@@ -369,13 +369,17 @@ class TherapyApp:
             medical_analysis: Analysis from medical context sentinel
             risk_assessment: Emergency risk evaluation
         """
+        # Get the original user message from the context engine
+        history = self.context_engine.get_full_history()
+        user_message = history[-1]["user"] if history else ""
+        
         # Display safety intervention if needed
         if risk_assessment.get("is_emergency", False):
             safety_message = self.safety_manager.get_safety_intervention(risk_assessment)
             self.display_message("Safety Alert", safety_message, "warning")
         
         # Synthesize final response
-        final_response = self.orchestrator.synthesize_response(therapeutic_response, medical_analysis)
+        final_response = self.orchestrator.synthesize_response(therapeutic_response, medical_analysis, user_message, self.context_engine)
         
         # Display system response
         self.display_message("MindLink", final_response)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Orchestration layer for the MindLink dual-model therapy system.
-Coordinates the Therapeutic Specialist and Medical Context Sentinel.
+Orchestration layer for the MindLink tri-model therapy system.
+Coordinates the Therapeutic Specialist, Medical Context Sentinel, and Response Synthesis models.
 """
 
 import threading
@@ -12,16 +12,17 @@ from typing import Dict, Tuple, Optional
 import ollama
 import json
 
-from config.settings import THERAPIST_MODEL, SENTINEL_MODEL, OLLAMA_HOST
+from config.settings import THERAPIST_MODEL, SENTINEL_MODEL, SYNTHESIS_MODEL, OLLAMA_HOST
 
-class DualModelOrchestrator:
-    """Coordinates the dual-model system for therapy sessions."""
+class TriModelOrchestrator:
+    """Coordinates the tri-model system for therapy sessions."""
     
     def __init__(self):
-        """Initialize the orchestrator with both models."""
+        """Initialize the orchestrator with all three models."""
         self.logger = logging.getLogger(__name__)
         self.therapist_model = THERAPIST_MODEL
         self.sentinel_model = SENTINEL_MODEL
+        self.synthesis_model = SYNTHESIS_MODEL
         
         # Initialize Ollama client
         self.client = ollama.Client(host=OLLAMA_HOST)
@@ -29,8 +30,9 @@ class DualModelOrchestrator:
         # Response queues for concurrent processing
         self.therapist_queue = queue.Queue()
         self.sentinel_queue = queue.Queue()
+        self.synthesis_queue = queue.Queue()
         
-        self.logger.info("DualModelOrchestrator initialized")
+        self.logger.info("TriModelOrchestrator initialized")
     
     def _generate_therapist_response(self, prompt: str) -> str:
         """Generate therapeutic response from the SLM."""
@@ -105,12 +107,58 @@ class DualModelOrchestrator:
                 "recommendation": "Continue with therapeutic support"
             }
     
-    def process_user_input(self, user_input: str) -> Tuple[str, Dict]:
+    def _generate_synthesis_response(self, therapeutic_response: str, medical_analysis: Dict, user_input: str, conversation_history: list) -> str:
+        """Generate final response using the larger synthesis model."""
+        try:
+            # Build conversation history context
+            history_text = ""
+            if conversation_history:
+                history_text = "\n".join([f"User: {exchange['user']}\nAssistant: {exchange['mindlink']}"
+                                        for exchange in conversation_history[-3:]])  # Last 3 exchanges
+            
+            # Create synthesis prompt
+            synthesis_prompt = f"""You are an expert at combining therapeutic wisdom with medical context awareness to provide helpful, focused responses.
+            
+Previous conversation:
+{history_text}
+
+Latest user input: {user_input}
+
+Therapeutic perspective: {therapeutic_response}
+
+Medical analysis: {json.dumps(medical_analysis, indent=2)}
+
+Your task:
+1. Combine these perspectives into a coherent, helpful response
+2. If there are clear medical concerns, ask targeted follow-up questions to narrow down the root cause
+3. If the user has provided sufficient information, summarize the key factors and provide practical recommendations
+4. Maintain a supportive, empathetic tone while being precise and focused
+5. Avoid repetitive questions - build on what's already been discussed
+6. When the user indicates they've shared all relevant information, provide a comprehensive summary
+
+Respond directly with the final response:"""
+            
+            response = self.client.generate(
+                model=self.synthesis_model,
+                prompt=synthesis_prompt,
+                options={
+                    "temperature": 0.5,  # More focused responses
+                    "top_p": 0.8
+                }
+            )
+            
+            return response['response'].strip()
+        except Exception as e:
+            self.logger.error(f"Error generating synthesis response: {e}")
+            return therapeutic_response
+    
+    def process_user_input(self, user_input: str, context: Optional[Dict] = None) -> Tuple[str, Dict]:
         """
         Process user input through both models concurrently.
         
         Args:
             user_input: The user's statement
+            context: Additional context information
             
         Returns:
             Tuple of (therapeutic_response, medical_analysis)
@@ -144,33 +192,37 @@ class DualModelOrchestrator:
         
         return therapeutic_response, medical_analysis
     
-    def synthesize_response(self, therapeutic_response: str, medical_analysis: Dict) -> str:
+    def synthesize_response(self, therapeutic_response: str, medical_analysis: Dict, user_input: str, context_engine=None) -> str:
         """
-        Synthesize the therapeutic response with medical context awareness.
+        Synthesize the final response using the third model.
         
         Args:
             therapeutic_response: Response from the therapeutic specialist
             medical_analysis: Analysis from the medical context sentinel
+            user_input: Original user input
+            context_engine: Context engine for session history
             
         Returns:
             Final synthesized response
         """
-        # Check for high-confidence medical concerns
-        if medical_analysis.get('confidence', 0) >= 0.7:
-            concerns = ', '.join(medical_analysis.get('medical_concerns', []))
-            recommendation = medical_analysis.get('recommendation', '')
-            
-            # Prepend medical context to therapeutic response
-            return (f"[MEDICAL CONTEXT AWARENESS: Potential physical factors ({concerns}) "
-                   f"may be contributing to your experience. {recommendation}] "
-                   f"\n\n{therapeutic_response}")
+        # Get conversation history if available
+        conversation_history = []
+        if context_engine:
+            conversation_history = context_engine.get_full_history()
         
-        # Return standard therapeutic response
-        return therapeutic_response
+        # Generate final response using the synthesis model
+        final_response = self._generate_synthesis_response(
+            therapeutic_response, 
+            medical_analysis, 
+            user_input, 
+            conversation_history
+        )
+        
+        return final_response
 
 if __name__ == "__main__":
     # Example usage
-    orchestrator = DualModelOrchestrator()
+    orchestrator = TriModelOrchestrator()
     
     # Test input
     test_input = "I've been feeling really tired and depressed lately, even though I'm getting enough sleep."
@@ -179,7 +231,7 @@ if __name__ == "__main__":
     therapeutic_resp, medical_analysis = orchestrator.process_user_input(test_input)
     
     # Synthesize final response
-    final_response = orchestrator.synthesize_response(therapeutic_resp, medical_analysis)
+    final_response = orchestrator.synthesize_response(therapeutic_resp, medical_analysis, test_input)
     
     print("Therapeutic Response:", therapeutic_resp)
     print("\nMedical Analysis:", medical_analysis)
