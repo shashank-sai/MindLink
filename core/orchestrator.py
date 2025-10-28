@@ -10,6 +10,7 @@ import time
 import logging
 from typing import Dict, Tuple, Optional
 import ollama
+import json
 
 from config.settings import THERAPIST_MODEL, SENTINEL_MODEL, OLLAMA_HOST
 
@@ -81,14 +82,20 @@ class DualModelOrchestrator:
                 }
             )
             
-            # Parse JSON response (would normally use json.loads)
-            # For prototype, we'll simulate the structure
-            return {
-                "medical_concerns": [],
-                "confidence": 0.0,
-                "urgency": "low",
-                "recommendation": "Continue with therapeutic support"
-            }
+            # Parse JSON response
+            try:
+                parsed_response = json.loads(response['response'])
+                return parsed_response
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Error parsing JSON response: {e}")
+                # Return safe fallback
+                return {
+                    "medical_concerns": [],
+                    "confidence": 0.0,
+                    "urgency": "low",
+                    "recommendation": "Continue with therapeutic support",
+                    "symptoms_identified": []
+                }
         except Exception as e:
             self.logger.error(f"Error generating medical analysis: {e}")
             return {
@@ -149,7 +156,7 @@ class DualModelOrchestrator:
             Final synthesized response
         """
         # Check for high-confidence medical concerns
-        if medical_analysis.get('confidence', 0) > 0.7:
+        if medical_analysis.get('confidence', 0) >= 0.7:
             concerns = ', '.join(medical_analysis.get('medical_concerns', []))
             recommendation = medical_analysis.get('recommendation', '')
             

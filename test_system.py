@@ -88,6 +88,56 @@ def test_basic_functionality():
         traceback.print_exc()
         return False
 
+def test_context_engine():
+    """Test context engine functionality."""
+    print("\nTesting context engine functionality...")
+    
+    try:
+        from core.context_engine import ContextEngine
+        
+        # Create context engine instance
+        context_engine = ContextEngine()
+        print("✓ Context engine instantiated successfully")
+        
+        # Test adding exchanges
+        context_engine.add_exchange("Hello, how are you?", "I'm doing well, thank you for asking!")
+        context_engine.add_exchange("I've been feeling stressed lately.", "I'm sorry to hear that. Would you like to talk about what's been causing your stress?")
+        
+        # Test getting history
+        history = context_engine.get_full_history()
+        if len(history) == 2:
+            print("✓ Conversation history management working correctly")
+        else:
+            print(f"✗ Unexpected history length: {len(history)}")
+            return False
+        
+        # Test context variables
+        context_engine.set_context("user_mood", "anxious")
+        context_engine.set_context("discussed_topics", ["stress", "work"])
+        
+        mood = context_engine.get_context("user_mood")
+        if mood == "anxious":
+            print("✓ Context variable management working correctly")
+        else:
+            print(f"✗ Unexpected context value: {mood}")
+            return False
+        
+        # Test session info
+        session_info = context_engine.get_session_info()
+        if "session_start_time" in session_info and "interaction_count" in session_info:
+            print("✓ Session information retrieval working correctly")
+        else:
+            print(f"✗ Unexpected session info format: {session_info}")
+            return False
+        
+        return True
+        
+    except Exception as e:
+        print(f"✗ Failed context engine test: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
 def main():
     """Run all tests."""
     print("MindLink System Test")
@@ -101,6 +151,11 @@ def main():
     # Test functionality
     if not test_basic_functionality():
         print("\n❌ Functionality tests failed!")
+        return 1
+    
+    # Test context engine
+    if not test_context_engine():
+        print("\n❌ Context engine tests failed!")
         return 1
     
     print("\n✅ All tests passed!")

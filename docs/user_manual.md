@@ -100,6 +100,17 @@ All conversations remain private:
 
 ## Advanced Features
 
+### Session Context Management
+
+MindLink now includes a context engine that maintains conversation history and session-specific information:
+
+- Tracks the last 10 conversation exchanges for contextual awareness
+- Stores session-specific context variables
+- Provides session duration and interaction statistics
+- Automatically manages conversation history for optimal performance
+
+This context engine enhances the therapeutic experience by maintaining continuity across the conversation.
+
 ### Session Logging
 
 MindLink maintains logs for:
