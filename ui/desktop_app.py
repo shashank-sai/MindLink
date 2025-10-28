@@ -32,6 +32,7 @@ class TherapyApp:
         # State variables
         self.is_processing = False
         self.conversation_history = []
+        self.session_start_time = datetime.now()
         
         # Setup UI
         self.setup_ui()
@@ -189,6 +190,21 @@ class TherapyApp:
         )
         disclaimer_button.grid(row=0, column=1, padx=(0, 10))
         
+        # Add session info button
+        session_button = tk.Button(
+            button_frame,
+            text="Session Info",
+            command=self.show_session_info,
+            font=("Arial", 10),
+            bg="#9b59b6",
+            fg="#ffffff",
+            relief="flat",
+            padx=10,
+            pady=5,
+            cursor="hand2"
+        )
+        session_button.grid(row=0, column=2, padx=(0, 10))
+        
         quit_button = tk.Button(
             button_frame,
             text="Quit",
@@ -201,7 +217,7 @@ class TherapyApp:
             pady=5,
             cursor="hand2"
         )
-        quit_button.grid(row=0, column=2, sticky="e")
+        quit_button.grid(row=0, column=3, sticky="e")
         
         # Focus on input field
         self.user_input.focus()
@@ -211,6 +227,18 @@ class TherapyApp:
         disclaimer = self.safety_manager.get_disclaimer()
         self.display_message("System", disclaimer, "info")
         self.safety_manager.record_disclaimer_shown()
+    
+    def show_session_info(self):
+        """Display session information."""
+        duration = datetime.now() - self.session_start_time
+        minutes = int(duration.total_seconds() // 60)
+        seconds = int(duration.total_seconds() % 60)
+        
+        info = f"Session Duration: {minutes} minutes, {seconds} seconds\n"
+        info += f"Interactions: {len(self.conversation_history)} messages\n"
+        info += f"Status: Active"
+        
+        self.display_message("Session Info", info, "info")
     
     def display_message(self, sender: str, message: str, msg_type: str = "normal"):
         """
@@ -268,6 +296,9 @@ class TherapyApp:
         self.user_input.delete(0, tk.END)
         # Reset background color
         self.user_input.config(bg="#ffffff")
+        
+        # Add to conversation history
+        self.conversation_history.append({"user": user_message, "timestamp": datetime.now()})
         
         # Display user message
         self.display_message("You", user_message)
@@ -330,6 +361,9 @@ class TherapyApp:
         
         # Display system response
         self.display_message("MindLink", final_response)
+        
+        # Add to conversation history
+        self.conversation_history.append({"mindlink": final_response, "timestamp": datetime.now()})
         
         # Reset status
         self.reset_status()
