@@ -254,22 +254,39 @@ class TherapyApp:
         # Add timestamp
         timestamp = datetime.now().strftime("%H:%M:%S")
         
-        # Format message based on type
+        # Format message based on type with modern LLM style
         if msg_type == "info":
-            formatted_msg = f"[{timestamp}] {sender}: {message}\n"
+            # Format info messages with bullet points and better structure
+            formatted_msg = f"[{timestamp}] {sender}:\n"
+            # Split message into lines and format as bullet points if it contains multiple lines
+            lines = message.strip().split('\n')
+            if len(lines) > 1:
+                formatted_msg += "  • " + "\n  • ".join(lines) + "\n"
+            else:
+                formatted_msg += "  • " + message + "\n"
             self.conversation_display.insert(tk.END, formatted_msg, "info")
         elif msg_type == "warning":
-            formatted_msg = f"[{timestamp}] ⚠️  {sender}: {message}\n"
+            # Format warning messages with clear heading
+            formatted_msg = f"[{timestamp}] ⚠️  {sender}:\n"
+            formatted_msg += "  " + message.replace('\n', '\n  ') + "\n"
             self.conversation_display.insert(tk.END, formatted_msg, "warning")
         elif msg_type == "error":
-            formatted_msg = f"[{timestamp}] ❌ {sender}: {message}\n"
+            # Format error messages with clear heading
+            formatted_msg = f"[{timestamp}] ❌ {sender}:\n"
+            formatted_msg += "  " + message.replace('\n', '\n  ') + "\n"
             self.conversation_display.insert(tk.END, formatted_msg, "error")
         else:
-            formatted_msg = f"[{timestamp}] {sender}: {message}\n"
+            # Format regular messages (user and MindLink responses) with better structure
+            formatted_msg = f"[{timestamp}] {sender}:\n"
+            # Format as paragraphs with proper indentation
+            paragraphs = message.split('\n\n')
+            for paragraph in paragraphs:
+                if paragraph.strip():
+                    formatted_msg += "  " + paragraph.replace('\n', '\n  ') + "\n\n"
             self.conversation_display.insert(tk.END, formatted_msg)
         
         # Apply formatting tags with enhanced styling
-        self.conversation_display.tag_config("info", foreground="#3498db", font=("Arial", 11, "italic"))
+        self.conversation_display.tag_config("info", foreground="#3498db", font=("Arial", 11))
         self.conversation_display.tag_config("warning", foreground="#f39c12", font=("Arial", 11, "bold"))
         self.conversation_display.tag_config("error", foreground="#e74c3c", font=("Arial", 11, "bold"))
         
