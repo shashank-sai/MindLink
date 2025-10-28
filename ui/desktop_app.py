@@ -20,8 +20,9 @@ class TherapyApp:
         """Initialize the therapy application."""
         self.root = root
         self.root.title("MindLink - Dual-Model Therapy Assistant")
-        self.root.geometry("800x600")
-        self.root.minsize(600, 400)
+        self.root.geometry("900x700")
+        self.root.minsize(700, 500)
+        self.root.configure(bg="#f0f0f0")
         
         # Initialize components
         self.orchestrator = DualModelOrchestrator()
@@ -45,8 +46,8 @@ class TherapyApp:
     
     def setup_ui(self):
         """Setup the user interface components."""
-        # Create main frame
-        main_frame = ttk.Frame(self.root, padding="10")
+        # Create main frame with styling
+        main_frame = ttk.Frame(self.root, padding="15")
         main_frame.grid(row=0, column=0, sticky="nesw")
         
         # Configure grid weights for resizing
@@ -55,25 +56,49 @@ class TherapyApp:
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(1, weight=1)
         
-        # Header
+        # Header with enhanced styling
         header_frame = ttk.Frame(main_frame)
-        header_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        header_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15))
+        header_frame.columnconfigure(1, weight=1)
         
-        title_label = ttk.Label(
-            header_frame, 
-            text="MindLink Therapy Assistant", 
-            font=("Arial", 16, "bold")
+        title_label = tk.Label(
+            header_frame,
+            text="MindLink Therapy Assistant",
+            font=("Arial", 20, "bold"),
+            fg="#2c3e50",
+            bg="#f0f0f0"
         )
-        title_label.pack(side=tk.LEFT)
+        title_label.grid(row=0, column=0, sticky="w")
         
-        # Status indicator
+        # Status indicator with enhanced styling
         self.status_var = tk.StringVar(value="Ready")
-        status_label = ttk.Label(header_frame, textvariable=self.status_var)
-        status_label.pack(side=tk.RIGHT)
+        status_frame = tk.Frame(header_frame, bg="#f0f0f0")
+        status_frame.grid(row=0, column=1, sticky="e")
         
-        # Conversation display
-        conv_frame = ttk.LabelFrame(main_frame, text="Conversation", padding="5")
-        conv_frame.grid(row=1, column=0, columnspan=2, sticky="nesw", pady=(0, 10))
+        status_label = tk.Label(
+            status_frame,
+            textvariable=self.status_var,
+            font=("Arial", 10),
+            fg="#7f8c8d",
+            bg="#ecf0f1",
+            padx=10,
+            pady=5,
+            relief="raised",
+            borderwidth=1
+        )
+        status_label.pack()
+        
+        # Conversation display with enhanced styling
+        conv_frame = tk.LabelFrame(
+            main_frame,
+            text="Conversation",
+            padx=10,
+            pady=10,
+            font=("Arial", 12, "bold"),
+            fg="#34495e",
+            bg="#f0f0f0"
+        )
+        conv_frame.grid(row=1, column=0, columnspan=2, sticky="nesw", pady=(0, 15))
         conv_frame.columnconfigure(0, weight=1)
         conv_frame.rowconfigure(0, weight=1)
         
@@ -81,37 +106,102 @@ class TherapyApp:
             conv_frame,
             wrap=tk.WORD,
             state=tk.DISABLED,
-            height=20
+            height=20,
+            font=("Arial", 11),
+            bg="#ffffff",
+            fg="#2c3e50",
+            padx=10,
+            pady=10,
+            relief="flat",
+            borderwidth=1
         )
         self.conversation_display.grid(row=0, column=0, sticky="nesw")
         
-        # Input area
-        input_frame = ttk.Frame(main_frame)
-        input_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        # Input area with enhanced styling
+        input_frame = tk.Frame(main_frame, bg="#f0f0f0")
+        input_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 15))
         input_frame.columnconfigure(1, weight=1)
         
-        input_label = ttk.Label(input_frame, text="Your message:")
-        input_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+        input_label = tk.Label(
+            input_frame,
+            text="Your message:",
+            font=("Arial", 12),
+            fg="#34495e",
+            bg="#f0f0f0"
+        )
+        input_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 10))
         
-        self.user_input = ttk.Entry(input_frame)
-        self.user_input.grid(row=0, column=1, sticky="ew", padx=(0, 5))
+        self.user_input = tk.Entry(
+            input_frame,
+            font=("Arial", 11),
+            bg="#ffffff",
+            fg="#2c3e50",
+            relief="solid",
+            borderwidth=1
+        )
+        self.user_input.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.user_input.bind("<Return>", self.send_message)
         
-        send_button = ttk.Button(input_frame, text="Send", command=self.send_message)
+        send_button = tk.Button(
+            input_frame,
+            text="Send",
+            command=self.send_message,
+            font=("Arial", 10, "bold"),
+            bg="#3498db",
+            fg="#ffffff",
+            relief="flat",
+            padx=15,
+            pady=5,
+            cursor="hand2"
+        )
         send_button.grid(row=0, column=2)
         
-        # Control buttons
-        button_frame = ttk.Frame(main_frame)
+        # Control buttons with enhanced styling
+        button_frame = tk.Frame(main_frame, bg="#f0f0f0")
         button_frame.grid(row=3, column=0, columnspan=2, sticky="ew")
+        button_frame.columnconfigure(1, weight=1)
         
-        clear_button = ttk.Button(button_frame, text="Clear Conversation", command=self.clear_conversation)
-        clear_button.pack(side=tk.LEFT, padx=(0, 5))
+        clear_button = tk.Button(
+            button_frame,
+            text="Clear Conversation",
+            command=self.clear_conversation,
+            font=("Arial", 10),
+            bg="#e74c3c",
+            fg="#ffffff",
+            relief="flat",
+            padx=10,
+            pady=5,
+            cursor="hand2"
+        )
+        clear_button.grid(row=0, column=0, padx=(0, 10))
         
-        disclaimer_button = ttk.Button(button_frame, text="Show Disclaimer", command=self.show_disclaimer)
-        disclaimer_button.pack(side=tk.LEFT, padx=(0, 5))
+        disclaimer_button = tk.Button(
+            button_frame,
+            text="Show Disclaimer",
+            command=self.show_disclaimer,
+            font=("Arial", 10),
+            bg="#f39c12",
+            fg="#ffffff",
+            relief="flat",
+            padx=10,
+            pady=5,
+            cursor="hand2"
+        )
+        disclaimer_button.grid(row=0, column=1, padx=(0, 10))
         
-        quit_button = ttk.Button(button_frame, text="Quit", command=self.root.quit)
-        quit_button.pack(side=tk.RIGHT)
+        quit_button = tk.Button(
+            button_frame,
+            text="Quit",
+            command=self.root.quit,
+            font=("Arial", 10),
+            bg="#95a5a6",
+            fg="#ffffff",
+            relief="flat",
+            padx=15,
+            pady=5,
+            cursor="hand2"
+        )
+        quit_button.grid(row=0, column=2, sticky="e")
         
         # Focus on input field
         self.user_input.focus()
@@ -150,10 +240,13 @@ class TherapyApp:
             formatted_msg = f"[{timestamp}] {sender}: {message}\n"
             self.conversation_display.insert(tk.END, formatted_msg)
         
-        # Apply formatting tags
-        self.conversation_display.tag_config("info", foreground="blue")
-        self.conversation_display.tag_config("warning", foreground="orange")
-        self.conversation_display.tag_config("error", foreground="red")
+        # Apply formatting tags with enhanced styling
+        self.conversation_display.tag_config("info", foreground="#3498db", font=("Arial", 11, "italic"))
+        self.conversation_display.tag_config("warning", foreground="#f39c12", font=("Arial", 11, "bold"))
+        self.conversation_display.tag_config("error", foreground="#e74c3c", font=("Arial", 11, "bold"))
+        
+        # Add spacing between messages
+        self.conversation_display.insert(tk.END, "\n")
         
         # Scroll to bottom
         self.conversation_display.see(tk.END)
