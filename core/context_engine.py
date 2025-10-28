@@ -1,4 +1,4 @@
-g#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Context Engine for the MindLink dual-model therapy system.
 Manages session-specific context and conversation history.

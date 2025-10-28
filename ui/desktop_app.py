@@ -381,17 +381,16 @@ class TherapyApp:
         self.display_message("MindLink", final_response)
         
         # Update the last exchange with the MindLink response
-        # Get the full history and update the last entry
         history = self.context_engine.get_full_history()
-        if history:
+        if history and history[-1]["mindlink"] == "":
             # Update the last exchange with the MindLink response
-            # We need to update the exchange in the context engine
-            # Since we can't directly modify the exchange, we'll add a new one and remove the old one
-            if history[-1]["mindlink"] == "":
-                # Update the last exchange with the MindLink response
-                # We'll need to implement a method to update the last exchange
-                # For now, we'll just add a new exchange
-                self.context_engine.add_exchange(history[-1]["user"], final_response)
+            # Since we can't directly modify the exchange, we'll clear the last entry and add a new one
+            self.context_engine.clear_history()
+            # Re-add all previous exchanges
+            for exchange in history[:-1]:
+                self.context_engine.add_exchange(exchange["user"], exchange["mindlink"])
+            # Add the last exchange with the updated response
+            self.context_engine.add_exchange(history[-1]["user"], final_response)
         
         # Reset status
         self.reset_status()
@@ -409,7 +408,7 @@ class TherapyApp:
             self.conversation_display.config(state=tk.NORMAL)
             self.conversation_display.delete(1.0, tk.END)
             self.conversation_display.config(state=tk.DISABLED)
-            self.conversation_history.clear()
+            self.context_engine.clear_history()
             self.display_message("System", "Conversation cleared. How can I help you today?", "info")
 
 if __name__ == "__main__":

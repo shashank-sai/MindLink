@@ -35,7 +35,7 @@ class TherapeuticSpecialist:
         try:
             # Build context-aware prompt
             if conversation_history:
-                history_text = "\n".join([f"User: {exchange['user']}\nTherapist: {exchange['therapist']}" 
+                history_text = "\n".join([f"User: {exchange['user']}\nTherapist: {exchange['mindlink']}"
                                         for exchange in conversation_history[-3:]])  # Last 3 exchanges
                 prompt = (f"Previous conversation:\n{history_text}\n\n"
                          f"User: {user_input}\n"

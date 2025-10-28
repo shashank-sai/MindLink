@@ -48,6 +48,13 @@ def test_imports():
         print(f"✗ Failed to import safety manager: {e}")
         return False
     
+    try:
+        from core.context_engine import ContextEngine
+        print("✓ Context engine imported successfully")
+    except Exception as e:
+        print(f"✗ Failed to import context engine: {e}")
+        return False
+    
     return True
 
 def test_basic_functionality():
