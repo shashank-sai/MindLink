@@ -259,10 +259,15 @@ class TherapyApp:
             
         user_message = self.user_input.get().strip()
         if not user_message:
+            # Visual feedback for empty message
+            self.user_input.config(bg="#ffebee")
+            self.root.after(500, lambda: self.user_input.config(bg="#ffffff"))
             return
             
         # Clear input field
         self.user_input.delete(0, tk.END)
+        # Reset background color
+        self.user_input.config(bg="#ffffff")
         
         # Display user message
         self.display_message("You", user_message)
@@ -270,6 +275,8 @@ class TherapyApp:
         # Process in separate thread to prevent UI freezing
         self.is_processing = True
         self.status_var.set("Processing...")
+        # Visual feedback for processing
+        self.root.config(cursor="watch")
         
         # Start processing thread
         processing_thread = threading.Thread(
@@ -331,6 +338,8 @@ class TherapyApp:
         """Reset processing status."""
         self.is_processing = False
         self.status_var.set("Ready")
+        # Reset cursor
+        self.root.config(cursor="")
     
     def clear_conversation(self):
         """Clear the conversation history."""
