@@ -15,7 +15,7 @@ from utils.safety import get_global_safety_manager
 from core.context_engine import ContextEngine
 
 class TherapyApp:
-    """Main desktop application for the MindLink therapy system."""
+    """Main desktop application for the MindLink therapy system.."""
     
     def __init__(self, root):
         """Initialize the therapy application."""
