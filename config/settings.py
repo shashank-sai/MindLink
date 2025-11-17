@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuration settings for the MindLink dual-model therapy system.
+Configuration settings for the MindLink dual-model therapy system....
 """
 
 # Model configurations
