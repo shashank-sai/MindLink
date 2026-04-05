@@ -50,3 +50,8 @@ Thumbs.db
 mindlink.log
 *.tmp
 *.temp
+
+# Large data files (exceeds GitHub 100MB limit)
+scrapedMetaData.csv
+selfClassificationData.csv
+*.large.csv
