@@ -2,7 +2,7 @@
 
 A local implementation of a dual-model AI therapy system designed to address the "somatic blind spot" in mental health AI.
 
-## System Architecture
+## System Architecturee
 
 ### Core Components
 
