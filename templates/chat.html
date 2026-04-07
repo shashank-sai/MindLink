@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindLink - Chat</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --accent-color: #9b59b6;
+        --light-bg: #f8f9fa;
+        --dark-text: #2c3e50;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .chat-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .chat-header {
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+        color: white;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .chat-messages {
+        height: 500px;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: var(--light-bg);
+      }
+
+      .message {
+        margin-bottom: 1.5rem;
+        animation: fadeIn 0.3s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .user-message {
+        text-align: right;
+      }
+
+      .user-message .message-content {
+        background: var(--primary-color);
+        color: white;
+        border-radius: 15px 15px 0 15px;
+        display: inline-block;
+        max-width: 80%;
+        padding: 0.75rem 1rem;
+      }
+
+      .bot-message .message-content {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px 15px 15px 0;
+        display: inline-block;
+        max-width: 80%;
+        padding: 0.75rem 1rem;
+      }
+
+      .system-message .message-content {
+        background: var(--light-bg);
+        border-left: 4px solid var(--accent-color);
+        border-radius: 0 15px 15px 0;
+        padding: 0.75rem 1rem;
+      }
+
+      .typing-indicator {
+        display: none;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px 15px 15px 0;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        width: fit-content;
+      }
+
+      .typing-dots {
+        display: flex;
+        align-items: center;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        margin: 0 2px;
+        animation: bounce 1.5s infinite;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .input-area {
+        padding: 1rem;
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .message-input {
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .message-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      }
+
+      .send-button {
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .session-info {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .timestamp {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        margin-top: 0.25rem;
+      }
+
+      .disclaimer {
+        background: #fff8e1;
+        border-left: 4px solid var(--warning-color);
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .safety-alert {
+        background: #ffebee;
+        border-left: 4px solid var(--danger-color);
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .user-dropdown {
+        position: relative;
+      }
+
+      .user-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        z-index: 1000;
+        margin-top: 8px;
+      }
+
+      .user-menu.show {
+        display: block;
+      }
+
+      .user-menu-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .user-menu-header strong {
+        display: block;
+        color: var(--secondary-color);
+      }
+
+      .user-menu-header small {
+        color: #666;
+      }
+
+      .user-menu-item {
+        padding: 0.75rem 1rem;
+        color: var(--dark-text);
+        text-decoration: none;
+        display: block;
+        transition: background 0.2s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .user-menu-item:hover {
+        background: var(--light-bg);
+      }
+
+      .user-menu-item i {
+        margin-right: 0.5rem;
+        width: 20px;
+      }
+
+      .conversation-sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        width: 300px;
+        height: 100vh;
+        background: white;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease;
+        z-index: 999;
+        overflow-y: auto;
+      }
+
+      .conversation-sidebar.show {
+        left: 0;
+      }
+
+      .conversation-sidebar-header {
+        padding: 1rem;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .conversation-list {
+        padding: 1rem;
+      }
+
+      .conversation-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .conversation-item:hover {
+        background: var(--light-bg);
+      }
+
+      .conversation-item h6 {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+      }
+
+      .conversation-item small {
+        color: #666;
+        font-size: 0.75rem;
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+      }
+
+      .sidebar-overlay.show {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        .chat-messages {
+          height: 400px;
+        }
+
+        .message-content {
+          max-width: 90% !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Conversation Sidebar -->
+    <div class="conversation-sidebar" id="conversation-sidebar">
+      <div class="conversation-sidebar-header">
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Conversations</h5>
+        <button class="btn btn-sm btn-light" id="close-sidebar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="conversation-list" id="conversation-list">
+        <!-- Conversations will be loaded here -->
+      </div>
+    </div>
+
+    <div class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+          <div class="chat-container">
+            <!-- Chat Header -->
+            <div class="chat-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <button class="btn btn-sm btn-light me-2" id="toggle-sidebar">
+                    <i class="fas fa-bars"></i>
+                  </button>
+                  <span class="me-2"
+                    ><i class="fas fa-comments me-1"></i>MindLink Therapy
+                    Assistant</span
+                  >
+                </div>
+                <div class="user-dropdown">
+                  <button
+                    class="btn btn-sm btn-light dropdown-toggle"
+                    id="user-menu-toggle"
+                  >
+                    <i class="fas fa-user-circle me-1"></i>
+                    <span id="user-display-name">User</span>
+                  </button>
+                  <div class="user-menu" id="user-menu">
+                    <div class="user-menu-header">
+                      <strong id="menu-username">Username</strong>
+                      <small id="menu-email">email@example.com</small>
+                    </div>
+                    <button class="user-menu-item" id="view-history">
+                      <i class="fas fa-history"></i> View History
+                    </button>
+                    <button class="user-menu-item" id="logout-btn">
+                      <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+              <div class="message system-message">
+                <div class="message-content">
+                  <strong>Welcome to MindLink!</strong>
+                  <p class="mb-0">
+                    I'm here to provide therapeutic support and help identify
+                    potential factors contributing to your concerns. Please
+                    share what's on your mind, and I'll ask targeted questions
+                    to better understand your situation.
+                  </p>
+                </div>
+                <div class="timestamp">Just now</div>
+              </div>
+
+              <div class="disclaimer">
+                <strong
+                  ><i class="fas fa-exclamation-triangle me-1"></i> Important
+                  Disclaimer:</strong
+                >
+                <p class="mb-0">
+                  MindLink is an AI assistant designed to provide supportive
+                  conversation and identify potential factors that may
+                  contribute to your experiences. It is not a substitute for
+                  professional medical advice, diagnosis, or treatment. Always
+                  seek the advice of your physician or qualified health provider
+                  with any questions you may have regarding a medical condition.
+                </p>
+              </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+              <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+              <div class="d-flex gap-2">
+                <input
+                  type="text"
+                  class="form-control message-input"
+                  id="message-input"
+                  placeholder="Type your message here..."
+                  disabled
+                />
+                <button
+                  class="btn btn-primary send-button"
+                  id="send-button"
+                  disabled
+                >
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="action-buttons mt-2">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  id="clear-history"
+                  disabled
+                >
+                  <i class="fas fa-trash me-1"></i>Clear History
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      class MindLinkChat {
+        constructor() {
+          this.socket = null;
+          this.sessionId = this.generateSessionId();
+          this.isConnected = false;
+          this.authToken = localStorage.getItem("authToken");
+          this.currentUser = null;
+
+          if (!this.authToken) {
+            window.location.href = "/auth";
+            return;
+          }
+
+          this.initializeSocket();
+          this.loadUserInfo();
+          this.bindEvents();
+        }
+
+        generateSessionId() {
+          return (
+            "session_" +
+            Math.random().toString(36).substring(2, 15) +
+            Math.random().toString(36).substring(2, 15)
+          );
+        }
+
+        initializeSocket() {
+          this.socket = io();
+
+          this.socket.on("connect", () => {
+            console.log("Connected to server with session ID:", this.sessionId);
+            this.isConnected = true;
+            this.enableInput();
+
+            // Join the session room
+            this.socket.emit("join_session", {
+              session_id: this.sessionId,
+              auth_token: this.authToken,
+            });
+          });
+
+          this.socket.on("auth_required", (data) => {
+            console.log("Authentication required");
+            localStorage.removeItem("authToken");
+            window.location.href = "/auth";
+          });
+
+          this.socket.on("auth_error", (data) => {
+            console.error("Auth error:", data.message);
+            localStorage.removeItem("authToken");
+            window.location.href = "/auth";
+          });
+
+          this.socket.on("message_response", (data) => {
+            console.log("Received message response:", data);
+            this.hideTyping();
+
+            if (data.risk_assessment && data.risk_assessment.is_emergency) {
+              this.addMessage(
+                "safety",
+                data.risk_assessment.message ||
+                  "Please seek immediate medical attention if you are in crisis.",
+              );
+            }
+
+            this.addMessage("bot", data.response);
+          });
+
+          this.socket.on("session_joined", (data) => {
+            console.log("Session joined successfully:", data);
+          });
+
+          this.socket.on("typing_start", () => {
+            this.showTyping();
+          });
+
+          this.socket.on("typing_end", () => {
+            this.hideTyping();
+          });
+
+          this.socket.on("error", (data) => {
+            this.hideTyping();
+            this.addMessage("system", "Error: " + data.message);
+          });
+
+          this.socket.on("disconnect", () => {
+            this.isConnected = false;
+            this.disableInput();
+            this.addMessage(
+              "system",
+              "Disconnected from server. Please refresh the page to reconnect.",
+            );
+          });
+        }
+
+        async loadUserInfo() {
+          try {
+            const response = await fetch("/api/auth/me", {
+              headers: {
+                Authorization: `Bearer ${this.authToken}`,
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              this.currentUser = data.user;
+              document.getElementById("user-display-name").textContent =
+                this.currentUser.username;
+              document.getElementById("menu-username").textContent =
+                this.currentUser.username;
+              document.getElementById("menu-email").textContent =
+                this.currentUser.email;
+            } else {
+              localStorage.removeItem("authToken");
+              window.location.href = "/auth";
+            }
+          } catch (error) {
+            console.error("Error loading user info:", error);
+            localStorage.removeItem("authToken");
+            window.location.href = "/auth";
+          }
+        }
+
+        bindEvents() {
+          const messageInput = document.getElementById("message-input");
+          const sendButton = document.getElementById("send-button");
+          const clearHistoryButton = document.getElementById("clear-history");
+          const userMenuToggle = document.getElementById("user-menu-toggle");
+          const userMenu = document.getElementById("user-menu");
+          const logoutBtn = document.getElementById("logout-btn");
+          const toggleSidebar = document.getElementById("toggle-sidebar");
+          const closeSidebar = document.getElementById("close-sidebar");
+          const sidebar = document.getElementById("conversation-sidebar");
+          const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+          // User menu toggle
+          userMenuToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle("show");
+          });
+
+          // Close menu when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              !userMenu.contains(e.target) &&
+              !userMenuToggle.contains(e.target)
+            ) {
+              userMenu.classList.remove("show");
+            }
+          });
+
+          // Logout
+          logoutBtn.addEventListener("click", () => {
+            this.logout();
+          });
+
+          // Toggle sidebar
+          toggleSidebar.addEventListener("click", () => {
+            sidebar.classList.add("show");
+            sidebarOverlay.classList.add("show");
+          });
+
+          closeSidebar.addEventListener("click", () => {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("show");
+          });
+
+          sidebarOverlay.addEventListener("click", () => {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("show");
+          });
+
+          // Send message on Enter key
+          messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && e.target.value.trim()) {
+              e.preventDefault();
+              this.sendMessage();
+            }
+          });
+
+          // Send message on button click
+          sendButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.sendMessage();
+          });
+
+          // Clear history
+          clearHistoryButton.addEventListener("click", () => {
+            if (
+              confirm(
+                "Are you sure you want to clear the conversation history?",
+              )
+            ) {
+              this.socket.emit("clear_history", {
+                session_id: this.sessionId,
+                auth_token: this.authToken,
+              });
+              document.getElementById("chat-messages").innerHTML = "";
+              this.addWelcomeMessage();
+            }
+          });
+        }
+
+        sendMessage() {
+          const messageInput = document.getElementById("message-input");
+          const message = messageInput.value.trim();
+
+          console.log("sendMessage called:", {
+            message: message,
+            isConnected: this.isConnected,
+            sessionId: this.sessionId,
+          });
+
+          if (!message) {
+            console.log("Empty message, returning");
+            return;
+          }
+
+          if (!this.isConnected) {
+            console.log("Not connected, returning");
+            this.addMessage(
+              "system",
+              "Not connected to server. Please refresh the page.",
+            );
+            return;
+          }
+
+          if (!this.sessionId) {
+            console.log("No session ID, returning");
+            return;
+          }
+
+          this.addMessage("user", message);
+          messageInput.value = "";
+
+          console.log("Emitting send_message event");
+          this.socket.emit("send_message", {
+            session_id: this.sessionId,
+            message: message,
+            auth_token: this.authToken,
+          });
+        }
+
+        addMessage(type, content) {
+          const chatMessages = document.getElementById("chat-messages");
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${type}-message`;
+
+          const timestamp = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          let messageContent = "";
+          if (type === "user") {
+            messageContent = `
+                    <div class="message-content">
+                        ${this.escapeHtml(content)}
+                    </div>
+                    <div class="timestamp text-end">${timestamp}</div>
+                `;
+          } else if (type === "bot") {
+            messageContent = `
+                    <div class="message-content">
+                        ${this.formatBotMessage(content)}
+                    </div>
+                    <div class="timestamp">${timestamp}</div>
+                `;
+          } else if (type === "system") {
+            messageContent = `
+                    <div class="message-content">
+                        <strong>System:</strong> ${this.escapeHtml(content)}
+                    </div>
+                    <div class="timestamp">${timestamp}</div>
+                `;
+          } else if (type === "safety") {
+            messageContent = `
+                    <div class="safety-alert">
+                        <strong><i class="fas fa-exclamation-triangle me-1"></i> Safety Alert:</strong>
+                        ${this.escapeHtml(content)}
+                    </div>
+                    <div class="timestamp">${timestamp}</div>
+                `;
+          }
+
+          messageDiv.innerHTML = messageContent;
+          chatMessages.appendChild(messageDiv);
+
+          // Scroll to bottom
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        addWelcomeMessage() {
+          const welcomeMessage = `
+                <div class="message system-message">
+                    <div class="message-content">
+                        <strong>Welcome to MindLink!</strong>
+                        <p class="mb-0">I'm here to provide therapeutic support and help identify potential factors contributing to your concerns. Please share what's on your mind, and I'll ask targeted questions to better understand your situation.</p>
+                    </div>
+                    <div class="timestamp">Just now</div>
+                </div>
+
+                <div class="disclaimer">
+                    <strong><i class="fas fa-exclamation-triangle me-1"></i> Important Disclaimer:</strong>
+                    <p class="mb-0">MindLink is an AI assistant designed to provide supportive conversation and identify potential factors that may contribute to your experiences. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or qualified health provider with any questions you may have regarding a medical condition.</p>
+                </div>
+            `;
+          document.getElementById("chat-messages").innerHTML = welcomeMessage;
+        }
+
+        formatBotMessage(content) {
+          // Convert line breaks to paragraphs
+          return content.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>");
+        }
+
+        escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        showTyping() {
+          document.getElementById("typing-indicator").style.display = "block";
+          const chatMessages = document.getElementById("chat-messages");
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        hideTyping() {
+          document.getElementById("typing-indicator").style.display = "none";
+        }
+
+        enableInput() {
+          document.getElementById("message-input").disabled = false;
+          document.getElementById("send-button").disabled = false;
+          document.getElementById("clear-history").disabled = false;
+        }
+
+        disableInput() {
+          document.getElementById("message-input").disabled = true;
+          document.getElementById("send-button").disabled = true;
+          document.getElementById("clear-history").disabled = true;
+        }
+
+        async logout() {
+          try {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${this.authToken}`,
+              },
+            });
+          } catch (error) {
+            console.error("Logout error:", error);
+          }
+
+          localStorage.removeItem("authToken");
+          window.location.href = "/auth";
+        }
+      }
+
+      // Initialize the chat when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new MindLinkChat();
+      });
+    </script>
+  </body>
+</html>
